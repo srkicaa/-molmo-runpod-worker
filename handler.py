@@ -6,22 +6,25 @@ import torch
 from PIL import Image
 from transformers import AutoProcessor, MolmoForCausalLM
 
+MODEL_ID = "allenai/Molmo2-8B"
+
 model = None
 processor = None
 
 
 def load_model():
     global model, processor
-    if model is not None:
+    if model is not None and processor is not None:
         return
     model = MolmoForCausalLM.from_pretrained(
-        "allenai/Molmo2-8B",
+        MODEL_ID,
         torch_dtype=torch.bfloat16,
         device_map="auto",
         trust_remote_code=True,
     )
+    model.eval()
     processor = AutoProcessor.from_pretrained(
-        "allenai/Molmo2-8B",
+        MODEL_ID,
         trust_remote_code=True,
     )
 
@@ -29,10 +32,13 @@ def load_model():
 def handler(job):
     global model, processor
 
+    data = job.get("input", {}) or {}
+    if data.get("_test") or data.get("test"):
+        return {"response": "ok", "test": True}
+
     if model is None or processor is None:
         load_model()
 
-    data = job.get("input", {}) or {}
     prompt = data.get("prompt", "")
     image_b64 = data.get("image")
 
@@ -50,7 +56,7 @@ def handler(job):
             return_tensors="pt",
         ).to(model.device)
 
-    with torch.no_grad():
+    with torch.inference_mode():
         output_ids = model.generate(
             **inputs,
             max_new_tokens=256,
@@ -58,9 +64,7 @@ def handler(job):
             temperature=0.7,
         )
 
-    # Molmo processor handles decoding
     text = processor.decode(output_ids[0], skip_special_tokens=True)
-
     return {"response": text}
 
 

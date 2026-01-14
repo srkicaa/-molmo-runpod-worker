@@ -1,7 +1,9 @@
 runpod
-torch
-torchvision
-torchaudio
 transformers
 accelerate
 pillow
+timm
+einops
+sentencepiece
+protobuf
+safetensors

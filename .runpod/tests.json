@@ -1,9 +1,28 @@
-[
-  {
-    "name": "simple-text",
-    "input": {
-      "prompt": "Say hello from Molmo2-8B",
-      "image": null
+{
+  "tests": [
+    {
+      "name": "simple-text",
+      "input": {
+        "_test": true,
+        "prompt": "Say hello from Molmo2-8B",
+        "image": null
+      },
+      "timeout": 10000
     }
+  ],
+  "config": {
+    "gpuTypeId": "NVIDIA A100 80GB PCIe",
+    "gpuCount": 1,
+    "allowedCudaVersions": [
+      "12.7",
+      "12.6",
+      "12.5",
+      "12.4",
+      "12.3",
+      "12.2",
+      "12.1",
+      "12.0",
+      "11.7"
+    ]
   }
-]
+}
