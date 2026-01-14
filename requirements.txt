@@ -1,0 +1,7 @@
+runpod
+torch
+torchvision
+torchaudio
+transformers
+accelerate
+pillow
