@@ -1,0 +1,9 @@
+runpod
+transformers
+accelerate
+pillow
+timm
+einops
+sentencepiece
+protobuf
+safetensors
