@@ -4,7 +4,7 @@ from io import BytesIO
 import runpod
 import torch
 from PIL import Image
-from transformers import AutoProcessor, MolmoForCausalLM
+from transformers import AutoModelForImageTextToText, AutoProcessor
 
 MODEL_ID = "allenai/Molmo2-8B"
 
@@ -16,11 +16,11 @@ def load_model():
     global model, processor
     if model is not None and processor is not None:
         return
-    model = MolmoForCausalLM.from_pretrained(
+    model = AutoModelForImageTextToText.from_pretrained(
         MODEL_ID,
-        torch_dtype=torch.bfloat16,
-        device_map="auto",
         trust_remote_code=True,
+        torch_dtype="auto",
+        device_map="auto",
     )
     model.eval()
     processor = AutoProcessor.from_pretrained(
