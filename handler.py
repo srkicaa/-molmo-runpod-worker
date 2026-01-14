@@ -44,11 +44,11 @@ def decode_image(image_b64: str):
 
 def handler(event):
     """
-    Expected input JSON:
+    Expected Runpod Serverless input:
     {
       "input": {
         "prompt": "Describe this image",
-        "image": "<base64-encoded image>"  # optional
+        "image": "<base64-encoded image>"  // optional
       }
     }
     """
@@ -56,7 +56,7 @@ def handler(event):
 
     inputs = event.get("input", {}) or {}
     prompt = inputs.get("prompt", "")
-    image_b64 = inputs.get("image", None)
+    image_b64 = inputs.get("image")
 
     if not isinstance(prompt, str):
         return {"error": "prompt must be a string"}
@@ -68,7 +68,7 @@ def handler(event):
         except Exception as e:
             return {"error": f"Failed to decode image: {e}"}
 
-    # Prepare multimodal inputs
+    # Prepare inputs for Molmo2-8B
     if image is not None:
         proc_inputs = processor(
             text=prompt,
@@ -86,10 +86,9 @@ def handler(event):
             **proc_inputs,
             max_new_tokens=256,
             do_sample=True,
-            temperature=0.7
+            temperature=0.7,
         )
 
-    # Molmo processor may have custom decoding
     try:
         response = processor.batch_decode(
             generated,
