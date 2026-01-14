@@ -1,11 +1,35 @@
 {
-  "name": "Molmo2-8B Serverless Worker",
-  "description": "Runpod serverless worker for allenai/Molmo2-8B (multimodal VLM).",
-  "tags": ["molmo", "vision-language", "multimodal"],
-  "image_name": "srkicaa/molmo2-8b-runpod-worker",
-  "default_hardware": {
-    "type": "GPU",
-    "gpu": "A100",
-    "gpu_count": 1
+  "title": "Molmo2-8B Serverless Worker",
+  "description": "Runpod Hub worker for allenai/Molmo2-8B (multimodal VLM).",
+  "type": "serverless",
+  "category": "language",
+  "config": {
+    "runsOn": "GPU",
+    "containerDiskInGb": 40,
+    "gpuCount": 1,
+    "gpuIds": "AMPERE_80,ADA_48_PRO,AMPERE_48",
+    "allowedCudaVersions": [
+      "12.8",
+      "12.7",
+      "12.6",
+      "12.5",
+      "12.4",
+      "12.3",
+      "12.2",
+      "12.1",
+      "12.0"
+    ],
+    "env": [
+      {
+        "key": "HUGGINGFACE_HUB_TOKEN",
+        "input": {
+          "type": "string",
+          "name": "Hugging Face token",
+          "description": "Optional token for faster or gated model downloads",
+          "default": "",
+          "advanced": true
+        }
+      }
+    ]
   }
 }
