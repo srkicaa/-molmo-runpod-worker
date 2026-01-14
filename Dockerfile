@@ -1,9 +1,8 @@
-FROM runpod/base:0.6.1-cuda12.1.0
+FROM pytorch/pytorch:2.5.1-cuda12.1-cudnn8-runtime
 
 WORKDIR /app
 COPY . /app
 
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 RUN pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "-u", "handler.py"]
