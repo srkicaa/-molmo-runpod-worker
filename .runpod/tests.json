@@ -1,0 +1,16 @@
+{
+  "tests": [
+    {
+      "name": "basic-text-prompt",
+      "description": "Check that the worker can answer a simple text prompt.",
+      "input": {
+        "input": {
+          "prompt": "Say hello from Molmo2-8B.",
+          "image": null
+        }
+      },
+      "expectedStatus": 200,
+      "timeoutSeconds": 600
+    }
+  ]
+}
