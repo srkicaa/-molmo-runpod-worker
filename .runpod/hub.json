@@ -1,1 +1,41 @@
+{
+  "title": "Molmo2-8B Vision-Language (Runpod)",
+  "description": "Serverless worker that serves allenai/Molmo2-8B for text and image prompts on Runpod.",
+  "type": "serverless",
+  "category": "language",
+  "iconUrl": "https://huggingface.co/front/assets/huggingface_logo-noborder.svg",
 
+  "config": {
+    "runsOn": "GPU",
+    "containerDiskInGb": 30,
+    "regions": ["EU-RO", "EU-DE", "US-OR"],
+    "networkVolumeMountPath": "/root/.cache/huggingface",
+    "idleTimeoutSeconds": 600,
+
+    "hardware": {
+      "preset": "GPU",
+      "gpuTypes": ["NVIDIA A100 80GB", "NVIDIA H100 80GB"],
+      "minVram": 40,
+      "minMemoryInGb": 32
+    },
+
+    "env": [
+      {
+        "name": "HUGGINGFACE_HUB_TOKEN",
+        "description": "Optional HF token if the model becomes gated.",
+        "required": false,
+        "secret": true
+      }
+    ],
+
+    "presets": [
+      {
+        "name": "Default",
+        "description": "Standard Molmo2-8B serverless config.",
+        "values": {
+          "idleTimeoutSeconds": 600
+        }
+      }
+    ]
+  }
+}
