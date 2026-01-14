@@ -4,9 +4,7 @@ from io import BytesIO
 import runpod
 import torch
 from PIL import Image
-from transformers import AutoProcessor, AutoModelForCausalLM
-
-MODEL_ID = "allenai/Molmo2-8B"
+from transformers import AutoProcessor, MolmoForCausalLM
 
 model = None
 processor = None
@@ -14,93 +12,56 @@ processor = None
 
 def load_model():
     global model, processor
-
-    if model is not None and processor is not None:
+    if model is not None:
         return
-
-    print(f"Loading model {MODEL_ID}...")
-
-    processor = AutoProcessor.from_pretrained(
-        MODEL_ID,
-        trust_remote_code=True
-    )
-
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID,
+    model = MolmoForCausalLM.from_pretrained(
+        "allenai/Molmo2-8B",
         torch_dtype=torch.bfloat16,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
+    )
+    processor = AutoProcessor.from_pretrained(
+        "allenai/Molmo2-8B",
+        trust_remote_code=True,
     )
 
-    model.eval()
-    print("Model loaded.")
 
+def handler(job):
+    global model, processor
 
-def decode_image(image_b64: str):
-    img_bytes = base64.b64decode(image_b64)
-    img = Image.open(BytesIO(img_bytes)).convert("RGB")
-    return img
+    if model is None or processor is None:
+        load_model()
 
+    data = job.get("input", {}) or {}
+    prompt = data.get("prompt", "")
+    image_b64 = data.get("image")
 
-def handler(event):
-    """
-    Expected Runpod Serverless input:
-    {
-      "input": {
-        "prompt": "Describe this image",
-        "image": "<base64-encoded image>"  // optional
-      }
-    }
-    """
-    load_model()
-
-    inputs = event.get("input", {}) or {}
-    prompt = inputs.get("prompt", "")
-    image_b64 = inputs.get("image")
-
-    if not isinstance(prompt, str):
-        return {"error": "prompt must be a string"}
-
-    image = None
     if image_b64:
-        try:
-            image = decode_image(image_b64)
-        except Exception as e:
-            return {"error": f"Failed to decode image: {e}"}
-
-    # Prepare inputs for Molmo2-8B
-    if image is not None:
-        proc_inputs = processor(
+        image_bytes = base64.b64decode(image_b64)
+        image = Image.open(BytesIO(image_bytes)).convert("RGB")
+        inputs = processor(
             text=prompt,
             images=image,
-            return_tensors="pt"
+            return_tensors="pt",
         ).to(model.device)
     else:
-        proc_inputs = processor(
+        inputs = processor(
             text=prompt,
-            return_tensors="pt"
+            return_tensors="pt",
         ).to(model.device)
 
     with torch.no_grad():
-        generated = model.generate(
-            **proc_inputs,
+        output_ids = model.generate(
+            **inputs,
             max_new_tokens=256,
             do_sample=True,
             temperature=0.7,
         )
 
-    try:
-        response = processor.batch_decode(
-            generated,
-            skip_special_tokens=True
-        )[0]
-    except Exception:
-        response = processor.decode(
-            generated[0],
-            skip_special_tokens=True
-        )
+    # Molmo processor handles decoding
+    text = processor.decode(output_ids[0], skip_special_tokens=True)
 
-    return {"output": response}
+    return {"response": text}
 
 
 runpod.serverless.start({"handler": handler})
